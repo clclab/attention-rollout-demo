@@ -112,7 +112,7 @@ def visualize_text(datarecords, legend=True):
                     ),
                     visualization.format_classname(datarecord.attr_class),
                     visualization.format_classname("{0:.2f}".format(datarecord.attr_score)),
-                    format_word_importances(
+                    visualization.format_word_importances(
                         datarecord.raw_input_ids, datarecord.word_attributions
                     ),
                     "<tr>",
