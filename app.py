@@ -190,5 +190,5 @@ def run(input_text):
     html = show_explanation(model, input_ids, attention_mask)
     return html
 
-iface = gradio.Interface(fn=greet, inputs="text", outputs="html", examples=[["This movie was the best movie I have ever seen! some scenes were ridiculous, but acting was great"], ["I really didn't like this movie. Some of the actors were good, but overall the movie was boring"]])
+iface = gradio.Interface(fn=run, inputs="text", outputs="html", examples=[["This movie was the best movie I have ever seen! some scenes were ridiculous, but acting was great"], ["I really didn't like this movie. Some of the actors were good, but overall the movie was boring"]])
 iface.launch()
