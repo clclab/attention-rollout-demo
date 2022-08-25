@@ -104,14 +104,14 @@ def visualize_text(datarecords, legend=True):
             "".join(
                 [
                     "<tr>",
-                    format_classname(datarecord.true_class),
-                    format_classname(
+                    visualization.format_classname(datarecord.true_class),
+                    visualization.format_classname(
                         "{0} ({1:.2f})".format(
                             datarecord.pred_class, datarecord.pred_prob
                         )
                     ),
-                    format_classname(datarecord.attr_class),
-                    format_classname("{0:.2f}".format(datarecord.attr_score)),
+                    visualization.format_classname(datarecord.attr_class),
+                    visualization.format_classname("{0:.2f}".format(datarecord.attr_score)),
                     format_word_importances(
                         datarecord.raw_input_ids, datarecord.word_attributions
                     ),
