@@ -132,7 +132,7 @@ def visualize_text(datarecords, legend=True):
                 '<span style="display: inline-block; width: 10px; height: 10px; \
                 border: 1px solid; background-color: \
                 {value}"></span> {label}  '.format(
-                    value=_get_color(value), label=label
+                    value=visualization._get_color(value), label=label
                 )
             )
         dom.append("</div>")
