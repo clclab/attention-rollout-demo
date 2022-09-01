@@ -284,7 +284,7 @@ lig = gradio.Interface(
 )
 
 iface = gradio.Parallel(hila, lig,
-                           title="RoBERTa Explanability",
+                           title="RoBERTa Explainability",
                         description="Quick comparison demo of explainability for sentiment prediction with RoBERTa. The outputs are from:\n\n* a version of [Hila Chefer's](https://github.com/hila-chefer) [Transformer-Explanability](https://github.com/hila-chefer/Transformer-Explainability/) but without the layerwise relevance propagation (as in [Transformer-MM_explainability](https://github.com/hila-chefer/Transformer-MM-Explainability/)) for a RoBERTa model.\n* [captum](https://captum.ai/)'s LayerIntegratedGradients",
     examples=[
         [
