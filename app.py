@@ -5,10 +5,11 @@ sys.path.append("BERT_explainability")
 
 import torch
 
+from transformers import AutoModelForSequenceClassification
 from BERT_explainability.ExplanationGenerator import Generator
 from BERT_explainability.roberta2 import RobertaForSequenceClassification
 from transformers import AutoTokenizer
-
+from captum.attr import LayerIntegratedGradients
 from captum.attr import visualization
 import torch
 
@@ -39,6 +40,7 @@ model = RobertaForSequenceClassification.from_pretrained(
     "textattack/roberta-base-SST-2"
 ).to(device)
 model.eval()
+model2 = AutoModelForSequenceClassification.from_pretrained("textattack/roberta-base-SST-2")
 tokenizer = AutoTokenizer.from_pretrained("textattack/roberta-base-SST-2")
 # initialize the explanations generator
 explanations = Generator(model, "roberta")
@@ -151,7 +153,7 @@ def visualize_text(datarecords, legend=True):
     return html
 
 
-def show_explanation(model, input_ids, attention_mask, index=None, start_layer=0):
+def show_explanation(model, input_ids, attention_mask, index=None, start_layer=8):
     # generate an explanation for the input
     output, expl = generate_relevance(
         model, input_ids, attention_mask, index=index, start_layer=start_layer
@@ -177,32 +179,87 @@ def show_explanation(model, input_ids, attention_mask, index=None, start_layer=0
         tokens = tokenizer.convert_ids_to_tokens(input_ids[record].flatten())[
             1 : 0 - ((attention_mask[record] == 0).sum().item() + 1)
         ]
-        vis_data_records.append(list(zip(tokens, nrm.tolist())))
+#        vis_data_records.append(list(zip(tokens, nrm.tolist())))
         #print([(tokens[i], nrm[i].item()) for i in range(len(tokens))])
-#        vis_data_records.append(
-#            visualization.VisualizationDataRecord(
-#                nrm,
-#                output[record][classification],
-#                classification,
-#                classification,
-#                index,
-#                1,
-#                tokens,
-#                1,
-#            )
-#        )
-#    return visualize_text(vis_data_records)
-    return vis_data_records
+        vis_data_records.append(
+            visualization.VisualizationDataRecord(
+                nrm,
+                output[record][classification],
+                classification,
+                classification,
+                index,
+                1,
+                tokens,
+                1,
+            )
+        )
+    return visualize_text(vis_data_records)
+#    return vis_data_records
 
+def custom_forward(inputs, attention_mask=None, pos=0):
+#    print("inputs", inputs.shape)
+    result = model2(inputs, attention_mask=attention_mask, return_dict=True)
+    preds = result.logits
+#    print("preds", preds.shape)
+    return preds
+
+def summarize_attributions(attributions):
+    attributions = attributions.sum(dim=-1).squeeze(0)
+    attributions = attributions / torch.norm(attributions)
+    return attributions
+
+
+def run_attribution_model(input_ids, attention_mask, ref_token_id=tokenizer.unk_token_id, layer=None, steps=20):
+    try:
+        output = model2(input_ids=input_ids, attention_mask=attention_mask)[0]
+        index = output.argmax(axis=-1).detach().cpu().numpy()
+
+        ablator = LayerIntegratedGradients(custom_forward, layer)
+        input_tensor = input_ids
+        attention_mask = attention_mask
+        attributions = ablator.attribute(
+                inputs=input_ids,
+                baselines=ref_token_id,
+                additional_forward_args=(attention_mask),
+                target=1,
+                n_steps=steps,
+        )
+        attributions = summarize_attributions(attributions).unsqueeze_(0)
+    finally:
+        pass
+    vis_data_records = []
+    print("IN", input_ids.size())
+    print("ATTR", attributions.shape)
+    for record in range(input_ids.size(0)):
+        classification = output[record].argmax(dim=-1).item()
+        class_name = classifications[classification]
+        attr = attributions[record]
+        tokens = tokenizer.convert_ids_to_tokens(input_ids[record].flatten())[
+            1 : 0 - ((attention_mask[record] == 0).sum().item() + 1)
+        ]
+        print("TOK", len(tokens), attr.shape)
+        vis_data_records.append(
+            visualization.VisualizationDataRecord(
+                attr,
+                output[record][classification],
+                classification,
+                classification,
+                index,
+                1,
+                tokens,
+                1,
+            )
+        )
+    return visualize_text(vis_data_records)
 
 def sentence_sentiment(input_text):
     text_batch = [input_text]
     encoding = tokenizer(text_batch, return_tensors="pt")
     input_ids = encoding["input_ids"].to(device)
     attention_mask = encoding["attention_mask"].to(device)
-    output = model(input_ids=input_ids, attention_mask=attention_mask)[0]
-    index = output.argmax(axis=-1).item()
-    return classifications[index]
+    layer = getattr(model2.roberta.encoder.layer, "8")
+    output = run_attribution_model(input_ids, attention_mask, layer=layer)
+    return output
 
 def sentiment_explanation_hila(input_text):
     text_batch = [input_text]
@@ -216,37 +273,26 @@ def sentiment_explanation_hila(input_text):
     return show_explanation(model, input_ids, attention_mask)
 
 hila = gradio.Interface(
-    fn=sentence_sentiment,
+    fn=sentiment_explanation_hila,
     inputs="text",
-    outputs="label",
-    title="RoBERTa Explanability",
-    description="Quick demo of a version of [Hila Chefer's](https://github.com/hila-chefer) [Transformer-Explanability](https://github.com/hila-chefer/Transformer-Explainability/) but without the layerwise relevance propagation (as in [Transformer-MM_explainability](https://github.com/hila-chefer/Transformer-MM-Explainability/)) for a RoBERTa model.",
-    examples=[
-        [
-            "This movie was the best movie I have ever seen! some scenes were ridiculous, but acting was great"
-        ],
-        [
-            "I really didn't like this movie. Some of the actors were good, but overall the movie was boring"
-        ],
-    ],
-    interpretation=sentiment_explanation_hila
+    outputs="html",
 )
-shap = gradio.Interface(
+lig = gradio.Interface(
     fn=sentence_sentiment,
     inputs="text",
-    outputs="label",
-    title="RoBERTa Explanability",
-    description="gradio shap explanations",
-    examples=[
-        [
-            "This movie was the best movie I have ever seen! some scenes were ridiculous, but acting was great"
-        ],
-        [
-            "I really didn't like this movie. Some of the actors were good, but overall the movie was boring"
-        ],
-    ],
-    interpretation="shap"
+    outputs="html",
 )
 
-iface = gradio.Parallel(hila, shap)
+iface = gradio.Parallel(hila, lig,
+                           title="RoBERTa Explanability",
+                        description="Quick comparison demo of explainability for sentiment prediction with RoBERTa. The outputs are from:\n\n* a version of [Hila Chefer's](https://github.com/hila-chefer) [Transformer-Explanability](https://github.com/hila-chefer/Transformer-Explainability/) but without the layerwise relevance propagation (as in [Transformer-MM_explainability](https://github.com/hila-chefer/Transformer-MM-Explainability/)) for a RoBERTa model.\n* [captum](https://captum.ai/)'s LayerIntegratedGradients",
+    examples=[
+        [
+            "This movie was the best movie I have ever seen! some scenes were ridiculous, but acting was great"
+        ],
+        [
+            "I really didn't like this movie. Some of the actors were good, but overall the movie was boring"
+        ],
+    ],
+)
 iface.launch()
