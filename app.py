@@ -202,7 +202,7 @@ def sentence_sentiment(input_text):
     attention_mask = encoding["attention_mask"].to(device)
     output = model(input_ids=input_ids, attention_mask=attention_mask)[0]
     index = output.argmax(axis=-1).item()
-    return classification[index]
+    return classifications[index]
 
 def sentiment_explanation_hila(input_text):
     text_batch = [input_text]
