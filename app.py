@@ -231,4 +231,21 @@ hila = gradio.Interface(
     ],
     interpretation=sentiment_explanation_hila
 )
-hila.launch()
+shap = gradio.Interface(
+    fn=sentence_sentiment,
+    inputs="text",
+    outputs="label",
+    title="RoBERTa Explanability",
+    description="gradio shap explanations",
+    examples=[
+        [
+            "This movie was the best movie I have ever seen! some scenes were ridiculous, but acting was great"
+        ],
+        [
+            "I really didn't like this movie. Some of the actors were good, but overall the movie was boring"
+        ],
+    ],
+    interpretation="shap"
+
+iface = gradio.Parallel(hila, shap)
+iface.launch()
