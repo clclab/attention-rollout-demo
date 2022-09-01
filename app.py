@@ -246,6 +246,7 @@ shap = gradio.Interface(
         ],
     ],
     interpretation="shap"
+)
 
 iface = gradio.Parallel(hila, shap)
 iface.launch()
