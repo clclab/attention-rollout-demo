@@ -156,7 +156,7 @@ def show_explanation(model, input_ids, attention_mask, index=None, start_layer=0
     output, expl = generate_relevance(
         model, input_ids, attention_mask, index=index, start_layer=start_layer
     )
-    print(output.shape, expl.shape)
+    #print(output.shape, expl.shape)
     # normalize scores
     scaler = PyTMinMaxScalerVectorized()
 
@@ -177,23 +177,34 @@ def show_explanation(model, input_ids, attention_mask, index=None, start_layer=0
         tokens = tokenizer.convert_ids_to_tokens(input_ids[record].flatten())[
             1 : 0 - ((attention_mask[record] == 0).sum().item() + 1)
         ]
-        print([(tokens[i], nrm[i].item()) for i in range(len(tokens))])
-        vis_data_records.append(
-            visualization.VisualizationDataRecord(
-                nrm,
-                output[record][classification],
-                classification,
-                classification,
-                index,
-                1,
-                tokens,
-                1,
-            )
-        )
-    return visualize_text(vis_data_records)
+        vis_data_records.append(list(zip(tokens, nrm.tolist())))
+        #print([(tokens[i], nrm[i].item()) for i in range(len(tokens))])
+#        vis_data_records.append(
+#            visualization.VisualizationDataRecord(
+#                nrm,
+#                output[record][classification],
+#                classification,
+#                classification,
+#                index,
+#                1,
+#                tokens,
+#                1,
+#            )
+#        )
+#    return visualize_text(vis_data_records)
+    return vis_data_records
 
 
-def run(input_text):
+def sentence_sentiment(input_text):
+    text_batch = [input_text]
+    encoding = tokenizer(text_batch, return_tensors="pt")
+    input_ids = encoding["input_ids"].to(device)
+    attention_mask = encoding["attention_mask"].to(device)
+    output = model(input_ids=input_ids, attention_mask=attention_mask)[0]
+    index = output.argmax(axis=-1).item()
+    return classification[index]
+
+def sentiment_explanation_hila(input_text):
     text_batch = [input_text]
     encoding = tokenizer(text_batch, return_tensors="pt")
     input_ids = encoding["input_ids"].to(device)
@@ -202,14 +213,12 @@ def run(input_text):
     # true class is positive - 1
     true_class = 1
 
-    html = show_explanation(model, input_ids, attention_mask)
-    return html
+    return show_explanation(model, input_ids, attention_mask)
 
-
-iface = gradio.Interface(
-    fn=run,
+hila = gradio.Interface(
+    fn=sentence_sentiment,
     inputs="text",
-    outputs="html",
+    outputs="label",
     title="RoBERTa Explanability",
     description="Quick demo of a version of [Hila Chefer's](https://github.com/hila-chefer) [Transformer-Explanability](https://github.com/hila-chefer/Transformer-Explainability/) but without the layerwise relevance propagation (as in [Transformer-MM_explainability](https://github.com/hila-chefer/Transformer-MM-Explainability/)) for a RoBERTa model.",
     examples=[
@@ -220,5 +229,6 @@ iface = gradio.Interface(
             "I really didn't like this movie. Some of the actors were good, but overall the movie was boring"
         ],
     ],
+    interpretation=sentiment_explanation_hila
 )
-iface.launch()
+hila.launch()
