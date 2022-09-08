@@ -293,10 +293,12 @@ Quick comparison demo of explainability for sentiment prediction with RoBERTa. T
 """,
     examples=[
         [
-            "This movie was the best movie I have ever seen! some scenes were ridiculous, but acting was great"
+            "This movie was the best movie I have ever seen! some scenes were ridiculous, but acting was great",
+            8
         ],
         [
-            "I really didn't like this movie. Some of the actors were good, but overall the movie was boring"
+            "I really didn't like this movie. Some of the actors were good, but overall the movie was boring",
+            8
         ],
     ],
 )
