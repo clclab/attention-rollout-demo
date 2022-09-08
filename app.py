@@ -282,14 +282,17 @@ lig = gradio.Interface(
 iface = gradio.Parallel(hila, lig,
                            title="RoBERTa Explainability",
                         description="""
-Quick comparison demo of explainability for sentiment prediction with RoBERTa. The outputs are from:
+In this demo, we use the RoBERTa language model (optimized for masked language modelling and finetuned for sentiment analysis). 
+The model predicts for a given sentences whether it expresses a positive, negative or neutral sentiment.
+But how does it arrive at its classification? A range of so-called "attribution methods" have been developed that attempt to determine the importance of the words in the input for the final prediction.
 
-* a version of [Hila Chefer's](https://github.com/hila-chefer)
-  [Transformer-Explanability](https://github.com/hila-chefer/Transformer-Explainability/)
-  but without the layerwise relevance propagation (as in
+(Note that in general, importance scores only provide a very limited form of "explanation" and that different attribution methods differ radically in how they assign importance).
+
+Two key methods for Transformers are "attention rollout" (Abnar & Zuidema, 2020) and (layered) Integrated Gradient. Here we show:
+
+* Gradient-weighted attention rollout, as defined by [Hila Chefer's](https://github.com/hila-chefer)
   [Transformer-MM_explainability](https://github.com/hila-chefer/Transformer-MM-Explainability/))
-  for a RoBERTa model.
-* [captum](https://captum.ai/)'s LayerIntegratedGradients
+* Layer IG, as implemented in [Captum](https://captum.ai/)'s LayerIntegratedGradients
 """,
     examples=[
         [
