@@ -76,14 +76,12 @@ def generate_relevance(model, input_ids, attention_mask, index=None, start_layer
         .to(torch.float)
         .requires_grad_(True)
     ).to(device)
-    print("ONE_HOT", one_hot.size(), one_hot)
     one_hot = torch.sum(one_hot * output)
     model.zero_grad()
     # create the gradients for the class we're interested in
     one_hot.backward(retain_graph=True)
 
     num_tokens = model.roberta.encoder.layer[0].attention.self.get_attn().shape[-1]
-    print(input_ids.size(-1), num_tokens)
     R = torch.eye(num_tokens).expand(output.size(0), -1, -1).clone().to(device)
 
     for i, blk in enumerate(model.roberta.encoder.layer):
@@ -158,7 +156,6 @@ def show_explanation(model, input_ids, attention_mask, index=None, start_layer=8
     output, expl = generate_relevance(
         model, input_ids, attention_mask, index=index, start_layer=start_layer
     )
-    #print(output.shape, expl.shape)
     # normalize scores
     scaler = PyTMinMaxScalerVectorized()
 
@@ -180,7 +177,6 @@ def show_explanation(model, input_ids, attention_mask, index=None, start_layer=8
             1 : 0 - ((attention_mask[record] == 0).sum().item() + 1)
         ]
 #        vis_data_records.append(list(zip(tokens, nrm.tolist())))
-        #print([(tokens[i], nrm[i].item()) for i in range(len(tokens))])
         vis_data_records.append(
             visualization.VisualizationDataRecord(
                 nrm,
@@ -194,13 +190,10 @@ def show_explanation(model, input_ids, attention_mask, index=None, start_layer=8
             )
         )
     return visualize_text(vis_data_records)
-#    return vis_data_records
 
 def custom_forward(inputs, attention_mask=None, pos=0):
-#    print("inputs", inputs.shape)
     result = model2(inputs, attention_mask=attention_mask, return_dict=True)
     preds = result.logits
-#    print("preds", preds.shape)
     return preds
 
 def summarize_attributions(attributions):
@@ -228,8 +221,6 @@ def run_attribution_model(input_ids, attention_mask, ref_token_id=tokenizer.unk_
     finally:
         pass
     vis_data_records = []
-    print("IN", input_ids.size())
-    print("ATTR", attributions.shape)
     for record in range(input_ids.size(0)):
         classification = output[record].argmax(dim=-1).item()
         class_name = classifications[classification]
@@ -237,7 +228,6 @@ def run_attribution_model(input_ids, attention_mask, ref_token_id=tokenizer.unk_
         tokens = tokenizer.convert_ids_to_tokens(input_ids[record].flatten())[
             1 : 0 - ((attention_mask[record] == 0).sum().item() + 1)
         ]
-        print("TOK", len(tokens), attr.shape)
         vis_data_records.append(
             visualization.VisualizationDataRecord(
                 attr,
@@ -252,16 +242,21 @@ def run_attribution_model(input_ids, attention_mask, ref_token_id=tokenizer.unk_
         )
     return visualize_text(vis_data_records)
 
-def sentence_sentiment(input_text):
+def sentence_sentiment(input_text, layer):
     text_batch = [input_text]
     encoding = tokenizer(text_batch, return_tensors="pt")
     input_ids = encoding["input_ids"].to(device)
     attention_mask = encoding["attention_mask"].to(device)
-    layer = getattr(model2.roberta.encoder.layer, "8")
+    layer = int(layer)
+    if layer == 0:
+        layer = model2.roberta.embeddings
+    else:
+        layer = getattr(model2.roberta.encoder.layer, str(layer-1))
+
     output = run_attribution_model(input_ids, attention_mask, layer=layer)
     return output
 
-def sentiment_explanation_hila(input_text):
+def sentiment_explanation_hila(input_text, layer):
     text_batch = [input_text]
     encoding = tokenizer(text_batch, return_tensors="pt")
     input_ids = encoding["input_ids"].to(device)
@@ -270,16 +265,17 @@ def sentiment_explanation_hila(input_text):
     # true class is positive - 1
     true_class = 1
 
-    return show_explanation(model, input_ids, attention_mask)
+    return show_explanation(model, input_ids, attention_mask, start_layer=int(layer))
 
+layer_slider = gradio.Slider(minimum=0, maximum=12, value=8, step=1, label="Select layer")
 hila = gradio.Interface(
     fn=sentiment_explanation_hila,
-    inputs="text",
+    inputs=["text", layer_slider],
     outputs="html",
 )
 lig = gradio.Interface(
     fn=sentence_sentiment,
-    inputs="text",
+    inputs=["text", layer_slider],
     outputs="html",
 )
 
