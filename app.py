@@ -288,11 +288,11 @@ But how does it arrive at its classification? A range of so-called "attribution 
 
 (Note that in general, importance scores only provide a very limited form of "explanation" and that different attribution methods differ radically in how they assign importance).
 
-Two key methods for Transformers are "attention rollout" (Abnar & Zuidema, 2020) and (layered) Integrated Gradient. Here we show:
+Two key methods for Transformers are "attention rollout" (Abnar & Zuidema, 2020) and (layer) Integrated Gradient. Here we show:
 
-* Gradient-weighted attention rollout, as defined by [Hila Chefer's](https://github.com/hila-chefer)
-  [Transformer-MM_explainability](https://github.com/hila-chefer/Transformer-MM-Explainability/))
-* Layer IG, as implemented in [Captum](https://captum.ai/)'s LayerIntegratedGradients
+* Gradient-weighted attention rollout, as defined by [Hila Chefer](https://github.com/hila-chefer)
+  [(Transformer-MM_explainability)](https://github.com/hila-chefer/Transformer-MM-Explainability/)
+* Layer IG, as implemented in [Captum](https://captum.ai/)(LayerIntegratedGradients)
 """,
     examples=[
         [
