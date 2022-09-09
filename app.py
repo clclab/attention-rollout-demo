@@ -285,11 +285,11 @@ iface = gradio.Parallel(hila, lig,
                         description="""
 In this demo, we use the RoBERTa language model (optimized for masked language modelling and finetuned for sentiment analysis). 
 The model predicts for a given sentences whether it expresses a positive, negative or neutral sentiment.
-But how does it arrive at its classification? A range of so-called "attribution methods" have been developed that attempt to determine the importance of the words in the input for the final prediction.
+But how does it arrive at its classification?  This is, surprisingly perhaps, very difficult to determine.
+A range of so-called "attribution methods" have been developed that attempt to determine the importance of the words in the input for the final prediction; 
+they provide a very limited form of "explanation" -- and often disagree -- but sometimes provide good initial hypotheses nevertheless that can be further explored with other methods.
 
-(Note that in general, importance scores only provide a very limited form of "explanation" and that different attribution methods differ radically in how they assign importance).
-
-Two key methods for Transformers are "attention rollout" (Abnar & Zuidema, 2020) and (layer) Integrated Gradient. Here we show:
+Two key attribution methods for Transformers are "Attention Rollout" (Abnar & Zuidema, 2020) and (layer) Integrated Gradient. Here we show:
 
 * Gradient-weighted attention rollout, as defined by [Hila Chefer](https://github.com/hila-chefer)
   [(Transformer-MM_explainability)](https://github.com/hila-chefer/Transformer-MM-Explainability/), without rollout recursion upto selected layer
@@ -314,7 +314,7 @@ Two key methods for Transformers are "attention rollout" (Abnar & Zuidema, 2020)
         ],
         [
             "If he had hated it, he would not have said that he loved it.",
-            8
+            2
         ],
         [
             "Attribution methods are very interesting, but unfortunately do not work reliably out of the box.",
