@@ -292,7 +292,7 @@ they provide a very limited form of "explanation" -- and often disagree -- but s
 Two key attribution methods for Transformers are "Attention Rollout" (Abnar & Zuidema, 2020) and (layer) Integrated Gradient. Here we show:
 
 * Gradient-weighted attention rollout, as defined by [Hila Chefer](https://github.com/hila-chefer)
-  [(Transformer-MM_explainability)](https://github.com/hila-chefer/Transformer-MM-Explainability/), without rollout recursion upto selected layer
+  [(Transformer-MM_explainability)](https://github.com/hila-chefer/Transformer-MM-Explainability/), with rollout recursion upto selected layer
 * Layer IG, as implemented in [Captum](https://captum.ai/)(LayerIntegratedGradients), based on gradient w.r.t. selected layer.
 """,
     examples=[
