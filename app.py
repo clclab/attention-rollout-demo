@@ -273,10 +273,10 @@ hila = gradio.Interface(
     inputs=["text", layer_slider],
     outputs="html",
 )
-layer_slider2 = gradio.Slider(minimum=0, maximum=12, value=0, step=1, label="Select IG layer")
+# layer_slider2 = gradio.Slider(minimum=0, maximum=12, value=0, step=1, label="Select IG layer")
 lig = gradio.Interface(
     fn=sentence_sentiment,
-    inputs=["text", layer_slider2],
+    inputs=["text", layer_slider],
     outputs="html",
 )
 
@@ -298,27 +298,27 @@ Two key methods for Transformers are "attention rollout" (Abnar & Zuidema, 2020)
     examples=[
         [
             "This movie was the best movie I have ever seen! some scenes were ridiculous, but acting was great",
-            8,0
+            8
         ],
         [
             "I really didn't like this movie. Some of the actors were good, but overall the movie was boring",
-            8,0
+            8
         ],
         [
             "If the acting had been better, this movie might have been pretty good.",
-            8,0
+            8
         ],
         [
             "If he had hated it, he would not have said that he loved it.",
-            8,3
+            8
         ],
         [
             "If he had hated it, he would not have said that he loved it.",
-            8,9
+            8
         ],
         [
             "Attribution methods are very interesting, but unfortunately do not work reliably out of the box.",
-            8,0
+            8
         ]
     ],
 )
