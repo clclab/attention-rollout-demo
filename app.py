@@ -267,7 +267,7 @@ def sentiment_explanation_hila(input_text, layer):
 
     return show_explanation(model, input_ids, attention_mask, start_layer=int(layer))
 
-layer_slider = gradio.Slider(minimum=0, maximum=12, value=8, step=1, label="Select rollout layer")
+layer_slider = gradio.Slider(minimum=0, maximum=12, value=8, step=1, label="Select layer")
 hila = gradio.Interface(
     fn=sentiment_explanation_hila,
     inputs=["text", layer_slider],
@@ -281,7 +281,7 @@ lig = gradio.Interface(
 )
 
 iface = gradio.Parallel(hila, lig,
-                           title="RoBERTa Explainability",
+                           title="Attention Rollout -- RoBERTa",
                         description="""
 In this demo, we use the RoBERTa language model (optimized for masked language modelling and finetuned for sentiment analysis). 
 The model predicts for a given sentences whether it expresses a positive, negative or neutral sentiment.
@@ -289,7 +289,8 @@ But how does it arrive at its classification?  This is, surprisingly perhaps, ve
 A range of so-called "attribution methods" have been developed that attempt to determine the importance of the words in the input for the final prediction; 
 they provide a very limited form of "explanation" -- and often disagree -- but sometimes provide good initial hypotheses nevertheless that can be further explored with other methods.
 
-Two key attribution methods for Transformers are "Attention Rollout" (Abnar & Zuidema, 2020) and (layer) Integrated Gradient. Here we show:
+Abnar & Zuidema (2020) proposed a method for Transformers called "Attention Rollout", which was further refined by Chefer et al. (2021) into Gradient-weighted Rollout. 
+Here we compare it to another popular method called Integrated Gradient.
 
 * Gradient-weighted attention rollout, as defined by [Hila Chefer](https://github.com/hila-chefer)
   [(Transformer-MM_explainability)](https://github.com/hila-chefer/Transformer-MM-Explainability/), with rollout recursion upto selected layer
