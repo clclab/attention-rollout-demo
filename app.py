@@ -267,13 +267,13 @@ def sentiment_explanation_hila(input_text, layer):
 
     return show_explanation(model, input_ids, attention_mask, start_layer=int(layer))
 
-layer_slider = gradio.Slider(minimum=0, maximum=12, value=8, step=1, label="Select layer")
+layer_slider = gradio.Slider(minimum=0, maximum=12, value=8, step=1, label="Select rollout layer")
 hila = gradio.Interface(
     fn=sentiment_explanation_hila,
     inputs=["text", layer_slider],
     outputs="html",
 )
-layer_slider2 = gradio.Slider(minimum=0, maximum=12, value=0, step=1, label="Select layer")
+layer_slider2 = gradio.Slider(minimum=0, maximum=12, value=0, step=1, label="Select IG layer")
 lig = gradio.Interface(
     fn=sentence_sentiment,
     inputs=["text", layer_slider2],
