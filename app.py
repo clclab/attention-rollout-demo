@@ -319,9 +319,7 @@ Two key methods for Transformers are "attention rollout" (Abnar & Zuidema, 2020)
         [
             "Attribution methods are very interesting, but unfortunately do not work reliably out of the box.",
             8,0
-        ],
-        
-
+        ]
     ],
 )
 iface.launch()
