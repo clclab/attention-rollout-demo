@@ -2,7 +2,7 @@ import sys
 import pandas
 import gradio
 
-sys.path.append("BERT_explainability")
+sys.path.append("lib")
 
 import torch
 
