@@ -273,9 +273,10 @@ hila = gradio.Interface(
     inputs=["text", layer_slider],
     outputs="html",
 )
+layer_slider2 = gradio.Slider(minimum=0, maximum=12, value=0, step=1, label="Select layer")
 lig = gradio.Interface(
     fn=sentence_sentiment,
-    inputs=["text", layer_slider],
+    inputs=["text", layer_slider2],
     outputs="html",
 )
 
@@ -291,18 +292,36 @@ But how does it arrive at its classification? A range of so-called "attribution 
 Two key methods for Transformers are "attention rollout" (Abnar & Zuidema, 2020) and (layer) Integrated Gradient. Here we show:
 
 * Gradient-weighted attention rollout, as defined by [Hila Chefer](https://github.com/hila-chefer)
-  [(Transformer-MM_explainability)](https://github.com/hila-chefer/Transformer-MM-Explainability/)
-* Layer IG, as implemented in [Captum](https://captum.ai/)(LayerIntegratedGradients)
+  [(Transformer-MM_explainability)](https://github.com/hila-chefer/Transformer-MM-Explainability/), without rollout recursion upto selected layer
+* Layer IG, as implemented in [Captum](https://captum.ai/)(LayerIntegratedGradients), based on gradient w.r.t. selected layer.
 """,
     examples=[
         [
             "This movie was the best movie I have ever seen! some scenes were ridiculous, but acting was great",
-            8
+            8,0
         ],
         [
             "I really didn't like this movie. Some of the actors were good, but overall the movie was boring",
-            8
+            8,0
         ],
+        [
+            "If the acting had been better, this movie might have been pretty good.",
+            8,0
+        ],
+        [
+            "If he had hated it, he would not have said that he loved it.",
+            8,3
+        ],
+        [
+            "If he had hated it, he would not have said that he loved it.",
+            8,9
+        ],
+        [
+            "Attribution methods are very interesting, but unfortunately do not work reliably out of the box.",
+            8,0
+        ],
+        
+
     ],
 )
 iface.launch()
