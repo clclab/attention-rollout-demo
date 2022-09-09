@@ -1,4 +1,5 @@
 import sys
+import pandas
 import gradio
 
 sys.path.append("BERT_explainability")
@@ -283,33 +284,8 @@ lig = gradio.Interface(
 with open("description.md", "r") as fh:
     description = fh.read()
 
-iface = gradio.Parallel(hila, lig, title="RoBERTa Explainability", description=description,
-    examples=[
-        [
-            "This movie was the best movie I have ever seen! some scenes were ridiculous, but acting was great",
-            8
-        ],
-        [
-            "I really didn't like this movie. Some of the actors were good, but overall the movie was boring",
-            8
-        ],
-        [
-            "If the acting had been better, this movie might have been pretty good.",
-            8
-        ],
-        [
-            "If he had hated it, he would not have said that he loved it.",
-            8
-        ],
-        [
-            "If he had hated it, he would not have said that he loved it.",
-            2
-        ],
-        [
-            "Attribution methods are very interesting, but unfortunately do not work reliably out of the box.",
-            8
-        ]
-    ],
-)
+examples = pandas.read_csv("examples.csv").to_numpy().tolist()
+
+iface = gradio.Parallel(hila, lig, title="RoBERTa Explainability", description=description, examples=examples)
 
 iface.launch()
