@@ -31,10 +31,10 @@ class PyTMinMaxScalerVectorized(object):
 def visualize_text(datarecords, legend=True):
     dom = ["<table width: 100%>"]
     rows = [
-        "<tr><th>True Label</th>"
+#        "<tr><th>True Label</th>"
         "<th>Predicted Label</th>"
         "<th>Attribution Label</th>"
-        "<th>Attribution Score</th>"
+#        "<th>Attribution Score</th>"
         "<th>Word Importance</th>"
     ]
     for datarecord in datarecords:
@@ -42,16 +42,17 @@ def visualize_text(datarecords, legend=True):
             "".join(
                 [
                     "<tr>",
-                    visualization.format_classname(datarecord.true_class),
-                    visualization.format_classname(
-                        "{0} ({1:.2f})".format(
-                            datarecord.pred_class, datarecord.pred_prob
-                        )
-                    ),
+#                    visualization.format_classname(datarecord.true_class),
+#                    visualization.format_classname(
+#                        "{0} ({1:.2f})".format(
+#                            datarecord.pred_class#, datarecord.pred_prob
+#                        )
+#                    ),
+                    visualization.format_classname(datarecord.pred_class),
                     visualization.format_classname(datarecord.attr_class),
-                    visualization.format_classname(
-                        "{0:.2f}".format(datarecord.attr_score)
-                    ),
+#                    visualization.format_classname(
+#                        "{0:.2f}".format(datarecord.attr_score)
+#                    ),
                     visualization.format_word_importances(
                         datarecord.raw_input_ids, datarecord.word_attributions
                     ),
