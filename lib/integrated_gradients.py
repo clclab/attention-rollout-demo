@@ -35,8 +35,8 @@ class IntegratedGradientsExplainer:
     def run_attribution_model(self, input_ids, attention_mask, index=None, layer=None, steps=20):
         try:
             output = self.model(input_ids=input_ids, attention_mask=attention_mask)[0]
-            if index is None:
-                index = output.argmax(axis=-1).item()
+#            if index is None:
+#                index = output.argmax(axis=-1).item()
 
             ablator = LayerIntegratedGradients(self.custom_forward, layer)
             input_tensor = input_ids
@@ -45,7 +45,7 @@ class IntegratedGradientsExplainer:
                     inputs=input_ids,
                     baselines=self.ref_token_id,
                     additional_forward_args=(attention_mask),
-                    target=index,
+                    target=1,
                     n_steps=steps,
             )
             return self.summarize_attributions(attributions).unsqueeze_(0), output, index
