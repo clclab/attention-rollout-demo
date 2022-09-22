@@ -15,7 +15,10 @@ class IntegratedGradientsExplainer:
         self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         self.model = AutoModelForSequenceClassification.from_pretrained("textattack/roberta-base-SST-2").to(self.device)
         self.tokenizer = AutoTokenizer.from_pretrained("textattack/roberta-base-SST-2")
-        self.ref_token_id = self.tokenizer.unk_token_id
+        self.baseline_map = {
+                'Unknown': self.tokenizer.unk_token_id,
+                'Padding': self.tokenizer.pad_token_id,
+            }
 
     def tokens_from_ids(self, ids):
         return list(map(lambda s: s[1:] if s[0] == "Ġ" else s, self.tokenizer.convert_ids_to_tokens(ids)))
@@ -31,8 +34,12 @@ class IntegratedGradientsExplainer:
         attributions = attributions / torch.norm(attributions)
         return attributions
 
+    def run_attribution_model(self, input_ids, attention_mask, baseline=None, index=None, layer=None, steps=20):
+        if baseline is None:
+            baseline = self.tokenizer.unk_token_id
+        else:
+            baseline = self.baseline_map[baseline]
 
-    def run_attribution_model(self, input_ids, attention_mask, index=None, layer=None, steps=20):
         try:
             output = self.model(input_ids=input_ids, attention_mask=attention_mask)[0]
 #            if index is None:
@@ -43,7 +50,7 @@ class IntegratedGradientsExplainer:
             attention_mask = attention_mask
             attributions = ablator.attribute(
                     inputs=input_ids,
-                    baselines=self.ref_token_id,
+                    baselines=baseline,
                     additional_forward_args=(attention_mask),
                     target=1,
                     n_steps=steps,
@@ -76,7 +83,7 @@ class IntegratedGradientsExplainer:
             )
         return visualize_text(vis_data_records)
 
-    def __call__(self, input_text, layer):
+    def __call__(self, input_text, layer, baseline):
         text_batch = [input_text]
         encoding = self.tokenizer(text_batch, return_tensors="pt")
         input_ids = encoding["input_ids"].to(self.device)
@@ -87,4 +94,4 @@ class IntegratedGradientsExplainer:
         else:
             layer = getattr(self.model.roberta.encoder.layer, str(layer-1))
 
-        return self.build_visualization(input_ids, attention_mask, layer=layer)
+        return self.build_visualization(input_ids, attention_mask, layer=layer, baseline=baseline)
