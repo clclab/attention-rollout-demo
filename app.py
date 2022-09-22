@@ -42,7 +42,7 @@ with gradio.Blocks(title="Explanations with attention rollout") as iface:
             ig_layer = gradio.Slider(minimum=0, maximum=12, value=8, step=1, label="Select IG layer")
             ig_result = gradio.HTML()
     gradio.Examples(examples, [sent])
-    with gradio.Accordion("Notes"):
+    with gradio.Accordion("Some more details"):
         util.Markdown(pathlib.Path("notice.md"))
 
     rollout_layer.change(gr_explainer, [sent, rollout_layer], rollout_result)
