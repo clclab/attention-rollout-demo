@@ -1,4 +1,3 @@
-**Some more details**
 * Shown on the left are the results from gradient-weighted attention rollout, as defined by [Hila Chefer](https://github.com/hila-chefer)
   [(Transformer-MM_explainability)](https://github.com/hila-chefer/Transformer-MM-Explainability/), with rollout recursion upto selected layer, and split out between contribution towards a predicted positive sentiment and a predicted negative sentiment.
 * Layer IG, as implemented in [Captum](https://captum.ai/)(LayerIntegratedGradients), based on gradient w.r.t. selected layer. IG integrates gradients over a path between observed word and a baseline (here we use two popular choices of baseline: the unknown word token, or the padding token). 
