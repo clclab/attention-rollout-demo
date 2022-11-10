@@ -280,7 +280,8 @@ class RobertaSelfAttention(nn.Module):
         attention_probs = nn.functional.softmax(attention_scores, dim=-1)
 
         self.save_attn(attention_probs)
-        attention_probs.register_hook(self.save_attn_gradients)
+        if attention_probs.requires_grad:
+            attention_probs.register_hook(self.save_attn_gradients)
 
         # This is actually dropping out entire tokens to attend to, which might
         # seem a bit unusual, but is taken from the original Transformer paper.
