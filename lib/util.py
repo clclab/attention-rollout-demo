@@ -28,14 +28,14 @@ class PyTMinMaxScalerVectorized(object):
         return tensor
 
 # copied out of captum because we need raw html instead of a jupyter widget
-def visualize_text(datarecords, legend=True):
+def visualize_text(datarecords, legend=False):
     dom = ["<table width: 100%>"]
     rows = [
 #        "<tr><th>True Label</th>"
-        "<th>Predicted Label</th>"
-        "<th>Attribution Label</th>"
+        "<th style='text-align: left'>Predicted Label</th>"
+        "<th style='text-align: left'>Attribution Label</th>"
 #        "<th>Attribution Score</th>"
-        "<th>Word Importance</th>"
+        "<th style='text-align: left'>Word Importance</th>"
     ]
     for datarecord in datarecords:
         rows.append(
