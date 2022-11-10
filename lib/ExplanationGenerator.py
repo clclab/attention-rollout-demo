@@ -25,8 +25,8 @@ class Generator:
         self.key = key
         self.model.eval()
 
-    def forward(self, input_ids, attention_mask):
-        return self.model(input_ids, attention_mask)
+    def tokens_from_ids(self, ids):
+        return list(map(lambda s: s[1:] if s[0] == "Ġ" else s, self.tokenizer.convert_ids_to_tokens(ids)))
 
     def _calculate_gradients(self, output, index, do_relprop=True):
         if index == None:
@@ -72,7 +72,6 @@ class Generator:
         rollout[:, 0, 0] = rollout[:, 0].min()
         return rollout[:, 0]
 
-
     def generate_LRP_last_layer(self, input_ids, attention_mask,
                      index=None):
         output = self.model(input_ids=input_ids, attention_mask=attention_mask)[0]
@@ -117,7 +116,7 @@ class Generator:
             all_layer_attentions.append(avg_heads)
         rollout = compute_rollout_attention(all_layer_attentions, start_layer=start_layer)
         rollout[:, 0, 0] = 0
-        return rollout[:, 0]
+        return output, rollout[:, 0]
 
     def generate_attn_gradcam(self, input_ids, attention_mask, index=None):
         output = self.model(input_ids=input_ids, attention_mask=attention_mask)[0]
@@ -148,12 +147,14 @@ class Generator:
             return torch.matmul(cam_ss, R_ss)
 
         output = self.model(input_ids=input_ids, attention_mask=attention_mask)[0]
-        blocks = _get_module_from_name(self.model, self.key)
+
+        self._calculate_gradients(output, index, do_relprop=False)
 
         num_tokens = input_ids.size(-1)
         R = torch.eye(num_tokens).expand(output.size(0), -1, -1).clone().to(output.device)
 
-        for i, blk in enumerate(model.roberta.encoder.layer):
+        blocks = _get_module_from_name(self.model, self.key)
+        for i, blk in enumerate(blocks):
             if i < start_layer:
                 continue
             grad = blk.attention.self.get_attn_gradients().detach()
@@ -161,5 +162,7 @@ class Generator:
             cam = avg_heads(cam, grad)
             joint = apply_self_attention_rules(R, cam)
             R += joint
-        return R[:, 0, 1:-1]
+        # 0 because we look at the influence *on* the CLS token
+        # 1:-1 because we don't want the influence *from* the CLS/SEP tokens
+        return output, R[:, 0, 1:-1]
 

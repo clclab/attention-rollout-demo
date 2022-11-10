@@ -6,15 +6,17 @@ from transformers import AutoTokenizer
 from captum.attr import LayerIntegratedGradients
 from captum.attr import visualization
 
+from roberta2 import RobertaForSequenceClassification
+from ExplanationGenerator import Generator
 from util import visualize_text
 
 classifications = ["NEGATIVE", "POSITIVE"]
 
 class IntegratedGradientsExplainer:
-    def __init__(self):
-        self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-        self.model = AutoModelForSequenceClassification.from_pretrained("textattack/roberta-base-SST-2").to(self.device)
-        self.tokenizer = AutoTokenizer.from_pretrained("textattack/roberta-base-SST-2")
+    def __init__(self, model, tokenizer):
+        self.model = model
+        self.device = model.device
+        self.tokenizer = tokenizer
         self.baseline_map = {
                 'Unknown': self.tokenizer.unk_token_id,
                 'Padding': self.tokenizer.pad_token_id,
