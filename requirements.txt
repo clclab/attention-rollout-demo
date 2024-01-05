@@ -2,4 +2,5 @@ torch
 transformers==4.21.2
 pandas
 captum
+httpx==0.24.1
 
